@@ -1,18 +1,43 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+bool isButtonPressed(int pin);
+void pinPulse(int pin, int pulseDudeTime, int pulseLowTime);
+void startBlinking();
+
+#define CONTROL_LED_PIN_1 10
+#define CONTROL_LED_PIN_2 11
+#define CONTROL_BUTTON_PIN 9
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  pinMode(CONTROL_LED_PIN_1 , OUTPUT);
+  pinMode(CONTROL_LED_PIN_2 , OUTPUT);
+  pinMode(CONTROL_BUTTON_PIN , INPUT_PULLDOWN);
+  Serial.begin(115200);  
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop() {  
+  if (isButtonPressed(CONTROL_BUTTON_PIN)) {
+    startBlinking();  
+  } 
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+bool isButtonPressed(int pin) {
+  return digitalRead(pin) == HIGH ? delay(10), digitalRead(pin) == HIGH : false;
+}
+
+void startBlinking() {
+  Serial.println("LED on");  
+  pinPulse(CONTROL_LED_PIN_1, 500, 0);
+  pinPulse(CONTROL_LED_PIN_2, 500, 0);
+  Serial.println("LED off");
+  // Stm 32 F1411ccux
+}
+// put function definitions here
+
+void pinPulse(int pin, int pulseDudeTime, int pulseLowTime) {
+  digitalWrite(pin, HIGH);
+  delay(pulseDudeTime);
+  digitalWrite(pin, LOW);
+  delay(pulseLowTime);
 }
