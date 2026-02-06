@@ -3,23 +3,27 @@
 bool isButtonPressed(int pin);
 void pinPulse(int pin, int pulseDudeTime, int pulseLowTime);
 void startBlinking();
+void readPhotoSensor();
 
+#define CONTROL_PHOTO_PIN_1 1
 #define CONTROL_LED_PIN_1 10
 #define CONTROL_LED_PIN_2 11
 #define CONTROL_BUTTON_PIN 9
-
+//esp 32 s3 series
 
 void setup() {
   pinMode(CONTROL_LED_PIN_1 , OUTPUT);
   pinMode(CONTROL_LED_PIN_2 , OUTPUT);
   pinMode(CONTROL_BUTTON_PIN , INPUT_PULLDOWN);
+  analogSetAttenuation(ADC_11db);
   Serial.begin(115200);  
 }
 
 void loop() {  
   if (isButtonPressed(CONTROL_BUTTON_PIN)) {
-    startBlinking();  
-  } 
+    readPhotoSensor();
+    startBlinking();      
+  }   
 }
 
 bool isButtonPressed(int pin) {
@@ -27,6 +31,7 @@ bool isButtonPressed(int pin) {
 }
 
 void startBlinking() {
+
   Serial.println("LED on");  
   pinPulse(CONTROL_LED_PIN_1, 500, 0);
   pinPulse(CONTROL_LED_PIN_2, 500, 0);
@@ -40,4 +45,10 @@ void pinPulse(int pin, int pulseDudeTime, int pulseLowTime) {
   delay(pulseDudeTime);
   digitalWrite(pin, LOW);
   delay(pulseLowTime);
+}
+
+void readPhotoSensor() {
+  int analogVal = analogRead(CONTROL_PHOTO_PIN_1);
+  Serial.println(analogVal);  
+  Serial.println((analogVal / 4095.0) * 3.3);  
 }
