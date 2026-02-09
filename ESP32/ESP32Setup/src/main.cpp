@@ -3,6 +3,7 @@
 bool isButtonPressed(int pin);
 void pinPulse(int pin, int pulseDudeTime, int pulseLowTime);
 void pinBlinkInPWWPulse(int pin, int pulseTime, float pwwDuteTime, float pwwPeriod);
+void pinLightInPWWPulse(int pin, int pulseTime, float pwwDuteTime, float pwwPeriod);
 void startBlinking();
 void readAnalogSensors();
 
@@ -31,7 +32,10 @@ void loop() {
     pinBlinkInPWWPulse(CONTROL_LED_PIN_1, 500, pwwDuteTime, PWW_PERIOD_TIME_MILISEC);
     pinBlinkInPWWPulse(CONTROL_LED_PIN_2, 500, pwwDuteTime, PWW_PERIOD_TIME_MILISEC);
     //startBlinking();      
-  }   
+  } else { // Light       
+    pinLightInPWWPulse(CONTROL_LED_PIN_1, 1000, pwwDuteTime, PWW_PERIOD_TIME_MILISEC);
+    pinLightInPWWPulse(CONTROL_LED_PIN_2, 1000, pwwDuteTime, PWW_PERIOD_TIME_MILISEC);
+  }
 }
 
 bool isButtonPressed(int pin) {
@@ -45,16 +49,22 @@ void startBlinking() {
 }
 // put function definitions here
 
-void pinBlinkInPWWPulse(int pin, int pulseTime, float pwwDuteTime, float pwwPeriod) {
-  long endTime = millis() + pulseTime;
+void pinLightInPWWPulse(int pin, int pulseTime, float pwwDuteTime, float pwwPeriod) {
+  long endTime = millis() + 1000;
   while (millis() <= endTime) {
       if (pwwDuteTime > 0){
         digitalWrite(pin, HIGH);          
+      } else {
+        digitalWrite(pin, LOW);  
       }      
       delay(pwwDuteTime);
       digitalWrite(pin, LOW);  
       delay(pwwPeriod - pwwDuteTime);
-  }
+  }  
+}
+
+void pinBlinkInPWWPulse(int pin, int pulseTime, float pwwDuteTime, float pwwPeriod) {
+  pinLightInPWWPulse(pin, pulseTime, pwwDuteTime, pwwPeriod);
   digitalWrite(pin, LOW);
   delay(pulseTime);
 }
@@ -75,7 +85,7 @@ void readAnalogSensors() {
   Serial.println(analogPotenciometrPWWVal);
   Serial.print("Milsec Dute Time ");
   Serial.println(pwwDuteTime);
-  
+
   Serial.print("Photo Resistor ");
   Serial.println(analogPhotoResistorVal);  
   Serial.println((analogPhotoResistorVal / 4095.0) * 3.3);  
