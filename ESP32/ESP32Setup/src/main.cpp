@@ -27,7 +27,7 @@ PWMConfig ledPWWCofig2Led = ledPWWCofig;
 bool isButtonPressed(int pin);
 void pinPulse(int pin, int pulseDudeTime, int pulseLowTime);
 void pinBlinkInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime);
-void pinLightInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime);
+void pinLightInPWWPulse(const PWMConfig& pwwCnfg);
 void startBlinking();
 void readAnalogSensors();
 
@@ -49,10 +49,10 @@ void loop() {
   
   readAnalogSensors();    
   if (!isButtonPressed(CONTROL_BUTTON_PIN)) { // Start Blinking
-    pinBlinkInPWWPulse(ledPWWCofig1Led, 500);
-    pinBlinkInPWWPulse(ledPWWCofig2Led, 500);    
+    pinBlinkInPWWPulse(ledPWWCofig1Led, 1000);
+    pinBlinkInPWWPulse(ledPWWCofig2Led, 1000);    
   } else { // Lighting both leds       
-    pinLightInPWWPulse(ledPWWCofig, 1000);    
+    pinLightInPWWPulse(ledPWWCofig);    
   }
 }
 
@@ -67,7 +67,7 @@ void startBlinking() {
 }
 // put function definitions here
 
-void pinLightInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime) {
+void pinLightInPWWPulse(const PWMConfig& pwwCnfg) {
   long endTime = millis() + pwwCnfg.PWWPeriodMilisec;  
   while (millis() <= endTime) {
       if (pwwCnfg.PWWDuteTimeMilisec > 0) {
@@ -83,12 +83,14 @@ void pinLightInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime) {
   }  
 }
 
-void pinBlinkInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime) {  
-  pinLightInPWWPulse(pwwCnfg, pulseTime);
+void pinBlinkInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime) {    
+  long endTime = millis() + pulseTime;  
+  while (millis() <= endTime) { 
+    pinLightInPWWPulse(pwwCnfg);
+  }
   for (size_t i = 0; i < pwwCnfg.PWWPinsLength; i++) {    
     digitalWrite(pwwCnfg.PWWPins[i], LOW);
    }  
-  delay(pulseTime);
 }
 
 void pinPulse(int pin, int pulseDudeTime, int pulseLowTime) {
