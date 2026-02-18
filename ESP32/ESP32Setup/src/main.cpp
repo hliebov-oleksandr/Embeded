@@ -1,119 +1,89 @@
 #include <Arduino.h>
 
+enum class LedState {
+  ON, OFF
+};
 
-#define CONTROL_ANALOG_PHOTO_PIN_1 1
-#define CONTROL_ANALOG_POTENCIOMETR_PIN_2 2
-#define CONTROL_LED_PIN_1 10
-#define CONTROL_LED_PIN_2 11
-#define CONTROL_BUTTON_PIN 9
+class LedWorkGonfig {
+  public:
+      static constexpr int LED_PIN_1 = 10;
+      static constexpr int LED_PIN_2 = 11;
+      static constexpr int BUTTON_CHANHE_MODE_PIN = 9;
+      static constexpr int PWWPOTENCIOMETR_PIN = 12;
+      static constexpr double PWW_LED_FREQUENCY_GZ = 1000.0;      
+      static constexpr int ANALOG_RESOLUTION = 4095;      
+};
 
-typedef struct {    
-   int PWWFrequencyGZ;  
-   int* PWWPins;   
-   int PWWPinsLength;   
-   float PWWPeriodMilisec;
-   float PWWDuteTimeMilisec;   
-} PWMConfig;
-int ledPins[] = { CONTROL_LED_PIN_1, CONTROL_LED_PIN_2 };
-int ledPin1[] = { CONTROL_LED_PIN_1 };
-int ledPin2[] = { CONTROL_LED_PIN_2 };
-PWMConfig ledPWWCofig = { .PWWFrequencyGZ = 1000,
-                          .PWWPins = ledPins,
-                          .PWWPinsLength = 2,
-                          .PWWPeriodMilisec = (1.0f / 1000) * 1000.0f }; // (1 sec /  PWWFrequencyGZ) * 1000 ForMilisec                          
-PWMConfig ledPWWCofig1Led = ledPWWCofig;
-PWMConfig ledPWWCofig2Led = ledPWWCofig;
+class PWWLed {  
+  private:
+      int ledPin;
+      LedState state;
+      int workFrequencyGZ;
+      double pwwLedPeriodInMilisec;       
+      double duteLightTimeInMilisec;
+      long ledDuteLastTimeMicros;
 
-bool isButtonPressed(int pin);
-void pinPulse(int pin, int pulseDudeTime, int pulseLowTime);
-void pinBlinkInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime);
-void pinLightInPWWPulse(const PWMConfig& pwwCnfg);
-void startBlinking();
-void readAnalogSensors();
+  public:
+      PWWLed(int pin, int pwwFrequencyGZ) : ledPin(pin), workFrequencyGZ(pwwFrequencyGZ) , state(LedState::OFF) {      
+        this->pwwLedPeriodInMilisec =  (1 / static_cast<double>(pwwFrequencyGZ)) * 1000.0;
+        this->duteLightTimeInMilisec = this->pwwLedPeriodInMilisec;
+        this->ledDuteLastTimeMicros = 0;
+        pinMode(ledPin, OUTPUT);
+      }
 
-//esp 32 s3 series
+      void setPWWDuteLightTime(int analogResolutionRange, int currentResolution) {
+        //Serial.print("Analog :");
+        //Serial.println(currentResolution);
+        double duteTimeMilisec = (static_cast<double>(currentResolution) / static_cast<double>(analogResolutionRange)) * this->pwwLedPeriodInMilisec;
+        this->duteLightTimeInMilisec =  duteTimeMilisec;
+        //Serial.println(duteTimeMilisec);
+      }      
+
+      void updateState(LedState state) {
+          this->state = state;
+          if (state == LedState::ON) {
+              unsigned long currentTime = micros(); // точность до микросекунд
+              unsigned long elapsed = currentTime - this->ledDuteLastTimeMicros;
+
+              // Переводим миллисекунды в микросекунды для сравнения
+              double duteTimeMicros = this->duteLightTimeInMilisec * 1000.0;
+              double periodMicros   = this->pwwLedPeriodInMilisec * 1000.0;
+
+              if (elapsed < duteTimeMicros) {
+                  digitalWrite(this->ledPin, HIGH);
+              } else if (elapsed < periodMicros) {
+                  digitalWrite(this->ledPin, LOW);
+              } else {
+                  this->ledDuteLastTimeMicros = currentTime; // начинаем новый цикл
+              }
+          } else {
+              digitalWrite(this->ledPin, LOW);
+          }
+      }
+
+      LedState getState(){
+          return this->state;
+      }
+};
+
+PWWLed led1(LedWorkGonfig::LED_PIN_1, LedWorkGonfig::PWW_LED_FREQUENCY_GZ);
+PWWLed led2(LedWorkGonfig::LED_PIN_2, LedWorkGonfig::PWW_LED_FREQUENCY_GZ);
+
 
 void setup() {
-  pinMode(CONTROL_LED_PIN_1 , OUTPUT);
-  pinMode(CONTROL_LED_PIN_2 , OUTPUT);
-  pinMode(CONTROL_BUTTON_PIN , INPUT_PULLDOWN);
   analogSetAttenuation(ADC_11db);
   Serial.begin(115200);  
-  ledPWWCofig1Led.PWWDuteTimeMilisec = ledPWWCofig2Led.PWWDuteTimeMilisec = ledPWWCofig.PWWDuteTimeMilisec = ledPWWCofig.PWWPeriodMilisec;                          
-  ledPWWCofig1Led.PWWPins = ledPin1;
-  ledPWWCofig2Led.PWWPins = ledPin2;
-  ledPWWCofig1Led.PWWPinsLength = ledPWWCofig2Led.PWWPinsLength = 1;
 }
 
 void loop() {    
-  
-  readAnalogSensors();    
-  if (!isButtonPressed(CONTROL_BUTTON_PIN)) { // Start Blinking
-    pinBlinkInPWWPulse(ledPWWCofig1Led, 1000);
-    pinBlinkInPWWPulse(ledPWWCofig2Led, 1000);    
-  } else { // Lighting both leds       
-    pinLightInPWWPulse(ledPWWCofig);    
-  }
+    int pwwValue = analogRead(LedWorkGonfig::PWWPOTENCIOMETR_PIN);
+    led1.setPWWDuteLightTime(LedWorkGonfig::ANALOG_RESOLUTION, pwwValue);
+    led2.setPWWDuteLightTime(LedWorkGonfig::ANALOG_RESOLUTION, pwwValue);
+
+    led1.updateState(LedState::ON);
+    led2.updateState(LedState::ON);
 }
 
 bool isButtonPressed(int pin) {
   return digitalRead(pin) == HIGH ? delay(5), digitalRead(pin) == HIGH : false;
 }
-
-void startBlinking() {
-  pinPulse(CONTROL_LED_PIN_1, 1000, 0);
-  pinPulse(CONTROL_LED_PIN_2, 1000, 0);  
-  // Stm 32 F1411ccux
-}
-// put function definitions here
-
-void pinLightInPWWPulse(const PWMConfig& pwwCnfg) {
-  long endTime = millis() + pwwCnfg.PWWPeriodMilisec;  
-  while (millis() <= endTime) {
-      if (pwwCnfg.PWWDuteTimeMilisec > 0) {
-        for (size_t i = 0; i < pwwCnfg.PWWPinsLength ; i++) {     
-          digitalWrite(pwwCnfg.PWWPins[i], HIGH);        
-        }              
-      }      
-      delay(pwwCnfg.PWWDuteTimeMilisec);      
-      for (size_t i = 0; i <  pwwCnfg.PWWPinsLength ; i++) {     
-          digitalWrite(pwwCnfg.PWWPins[i], LOW);              
-      }                    
-      delay(pwwCnfg.PWWPeriodMilisec - pwwCnfg.PWWDuteTimeMilisec);
-  }  
-}
-
-void pinBlinkInPWWPulse(const PWMConfig& pwwCnfg, int pulseTime) {    
-  long endTime = millis() + pulseTime;  
-  while (millis() <= endTime) { 
-    pinLightInPWWPulse(pwwCnfg);
-  }
-  for (size_t i = 0; i < pwwCnfg.PWWPinsLength; i++) {    
-    digitalWrite(pwwCnfg.PWWPins[i], LOW);
-   }  
-}
-
-void pinPulse(int pin, int pulseDudeTime, int pulseLowTime) {
-  digitalWrite(pin, HIGH);
-  delay(pulseDudeTime);
-  digitalWrite(pin, LOW);
-  delay(pulseLowTime);
-}
-
-void readAnalogSensors() {
-  int analogPhotoResistorVal = analogRead(CONTROL_ANALOG_PHOTO_PIN_1);  
-  int analogPotenciometrPWWVal = analogRead(CONTROL_ANALOG_POTENCIOMETR_PIN_2);  
-  
-  ledPWWCofig1Led.PWWDuteTimeMilisec = ledPWWCofig2Led.PWWDuteTimeMilisec = 
-  ledPWWCofig.PWWDuteTimeMilisec  = (double(analogPotenciometrPWWVal) / 4095.0) * ledPWWCofig.PWWPeriodMilisec;
-
-  Serial.print("Potenciometr val ");
-  Serial.println(analogPotenciometrPWWVal);
-  Serial.print("Milsec Dute Time ");
-  Serial.println(ledPWWCofig.PWWDuteTimeMilisec);
-
-  Serial.print("Photo Resistor ");
-  Serial.println(analogPhotoResistorVal);  
-  Serial.println((analogPhotoResistorVal / 4095.0) * 3.3);  
-}
-
