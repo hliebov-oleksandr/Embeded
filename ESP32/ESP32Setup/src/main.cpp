@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+void buttonLedChangeModeClick();
+
 enum class LedState {
   ON, OFF
 };
@@ -9,55 +11,29 @@ class LedWorkGonfig {
       static constexpr int LED_PIN_1 = 10;
       static constexpr int LED_PIN_2 = 11;
       static constexpr int BUTTON_CHANHE_MODE_PIN = 9;
-      static constexpr int PWWPOTENCIOMETR_PIN = 12;
-      static constexpr double PWW_LED_FREQUENCY_GZ = 1000.0;      
+      static constexpr int IS_BUTTON_PRESSED_MILISEC_FLAG = 20;
+      static constexpr int PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC = 1000;
+      static constexpr int PWWPOTENCIOMETR_PIN = 12;      
       static constexpr int ANALOG_RESOLUTION = 4095;      
 };
 
 class PWWLed {  
   private:
       int ledPin;
-      LedState state;
-      int workFrequencyGZ;
-      double pwwLedPeriodInMilisec;       
-      double duteLightTimeInMilisec;
-      long ledDuteLastTimeMicros;
+      LedState state;      
 
   public:
-      PWWLed(int pin, int pwwFrequencyGZ) : ledPin(pin), workFrequencyGZ(pwwFrequencyGZ) , state(LedState::OFF) {      
-        this->pwwLedPeriodInMilisec =  (1 / static_cast<double>(pwwFrequencyGZ)) * 1000.0;
-        this->duteLightTimeInMilisec = this->pwwLedPeriodInMilisec;
-        this->ledDuteLastTimeMicros = 0;
-        pinMode(ledPin, OUTPUT);
-      }
 
-      void setPWWDuteLightTime(int analogResolutionRange, int currentResolution) {
-        //Serial.print("Analog :");
-        //Serial.println(currentResolution);
-        double duteTimeMilisec = (static_cast<double>(currentResolution) / static_cast<double>(analogResolutionRange)) * this->pwwLedPeriodInMilisec;
-        this->duteLightTimeInMilisec =  duteTimeMilisec;
-        //Serial.println(duteTimeMilisec);
-      }      
+      PWWLed(int pin) : ledPin(pin), state(LedState::OFF) {              
+        pinMode(ledPin, OUTPUT);
+      }           
 
       void updateState(LedState state) {
           this->state = state;
           if (state == LedState::ON) {
-              unsigned long currentTime = micros(); // точность до микросекунд
-              unsigned long elapsed = currentTime - this->ledDuteLastTimeMicros;
-
-              // Переводим миллисекунды в микросекунды для сравнения
-              double duteTimeMicros = this->duteLightTimeInMilisec * 1000.0;
-              double periodMicros   = this->pwwLedPeriodInMilisec * 1000.0;
-
-              if (elapsed < duteTimeMicros) {
-                  digitalWrite(this->ledPin, HIGH);
-              } else if (elapsed < periodMicros) {
-                  digitalWrite(this->ledPin, LOW);
-              } else {
-                  this->ledDuteLastTimeMicros = currentTime; // начинаем новый цикл
-              }
+            digitalWrite(this->ledPin, HIGH);
           } else {
-              digitalWrite(this->ledPin, LOW);
+            digitalWrite(this->ledPin, LOW);
           }
       }
 
@@ -66,24 +42,67 @@ class PWWLed {
       }
 };
 
-PWWLed led1(LedWorkGonfig::LED_PIN_1, LedWorkGonfig::PWW_LED_FREQUENCY_GZ);
-PWWLed led2(LedWorkGonfig::LED_PIN_2, LedWorkGonfig::PWW_LED_FREQUENCY_GZ);
+PWWLed led1(LedWorkGonfig::LED_PIN_1);
+PWWLed led2(LedWorkGonfig::LED_PIN_2);
 
+volatile bool isButtonPressed = false;
 
 void setup() {
-  analogSetAttenuation(ADC_11db);
-  Serial.begin(115200);  
+  analogSetAttenuation(ADC_11db);  
+  Serial.begin(115200);    
+  pinMode(LedWorkGonfig::BUTTON_CHANHE_MODE_PIN, INPUT_PULLDOWN);
+  attachInterrupt(LedWorkGonfig::BUTTON_CHANHE_MODE_PIN, buttonLedChangeModeClick, CHANGE);  
 }
 
-void loop() {    
-    int pwwValue = analogRead(LedWorkGonfig::PWWPOTENCIOMETR_PIN);
-    led1.setPWWDuteLightTime(LedWorkGonfig::ANALOG_RESOLUTION, pwwValue);
-    led2.setPWWDuteLightTime(LedWorkGonfig::ANALOG_RESOLUTION, pwwValue);
+void loop() {        
+  static long workTime = 0;
 
+  if (!isButtonPressed) {
     led1.updateState(LedState::ON);
     led2.updateState(LedState::ON);
+    workTime = 0;
+  } else {
+      
+      long currentTime = millis();
+      long elapsedTime = currentTime - workTime;
+
+      //mode 1 Blink Light
+      if (elapsedTime <= LedWorkGonfig::PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC) {
+        bool isOn = (currentTime / 50) % 2 == 0;
+        if (isOn) {
+          led1.updateState(LedState::ON);
+          led2.updateState(LedState::ON);
+        } else {
+          led1.updateState(LedState::OFF);
+          led2.updateState(LedState::OFF);
+        }
+      }
+      //mode 2 Turn On
+      else if (elapsedTime > LedWorkGonfig::PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC && 
+        elapsedTime <= LedWorkGonfig::PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC * 2)
+      {
+           led1.updateState(LedState::ON);    
+           led2.updateState(LedState::ON);
+      }
+      //mode 3 Turn off
+      else if (elapsedTime > LedWorkGonfig::PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC * 2 && 
+        elapsedTime <= LedWorkGonfig::PERIOD_TO_CHANGE_LIGHT_MODE_MILISEC * 3)
+      {
+          led1.updateState(LedState::OFF);    
+          led2.updateState(LedState::OFF);
+      }
+      else {
+        workTime = currentTime;
+      }
+  }
+   
 }
 
-bool isButtonPressed(int pin) {
-  return digitalRead(pin) == HIGH ? delay(5), digitalRead(pin) == HIGH : false;
+void IRAM_ATTR buttonLedChangeModeClick() {   
+    long currentTime = millis();
+    if (digitalRead(LedWorkGonfig::BUTTON_CHANHE_MODE_PIN) == HIGH) {
+       isButtonPressed = true;       
+    } else if (digitalRead(LedWorkGonfig::BUTTON_CHANHE_MODE_PIN) == LOW){
+      isButtonPressed = false;     
+    }    
 }
