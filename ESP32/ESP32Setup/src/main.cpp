@@ -33,10 +33,6 @@ void displayInfo(const char* inEndInfo) {
   display.setTextSize(2);
   display.println("Station: 101.2 MHz");
 
-  if (sizeof(inEndInfo) / sizeof(inEndInfo[0]) > 0) {
-    display.println(inEndInfo);
-  }
-
   display.display();
 }
 
