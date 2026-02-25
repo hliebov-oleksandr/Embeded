@@ -118,9 +118,9 @@ void loop() {
           int blinkPeriod = LedWorkConfig::GREEN_BLINK_LIGHT_TIME_MILISEC / blinkCount;
 
           if ((currentPhaseMilisec % blinkPeriod) < (blinkPeriod / 2)) {
-              ledGreen.updateState(LedState::ON);
-          } else {
               ledGreen.updateState(LedState::OFF);
+          } else {
+              ledGreen.updateState(LedState::ON);
           }
     }
     break;
