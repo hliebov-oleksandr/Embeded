@@ -1,40 +1,24 @@
-typedef unsigned long (*GetMicrosecFunc)(void);
-typedef void (*Func)(void);
+#include "pwm.h"
 
-class PWMControl_ {  
-  private:       
-      int workFrequencyGZ;
-      double pwwPeriodInMilisec;       
-      double duteLightTimeInMilisec;
-      long duteLastTimeMicros;
-      GetMicrosecFunc microsecFunc;
-      Func dutyFunc;
-      Func offFunc;
-
-  public:
-      PWMControl_() {
-
-      } 
-
-      PWMControl_(int pwwFrequencyGZ, GetMicrosecFunc microseconds) :             
+    
+      PWMControl::PWMControl(int pwwFrequencyGZ, GetMicrosecFunc microseconds) :             
             microsecFunc(microseconds), workFrequencyGZ(pwwFrequencyGZ) {      
         this->pwwPeriodInMilisec =  (1 / static_cast<double>(pwwFrequencyGZ)) * 1000.0;
         this->duteLightTimeInMilisec = this->pwwPeriodInMilisec;
         this->duteLastTimeMicros = 0;               
       }
       
-      void setPulseFunc(Func dutyFunc, Func offFunc) {
+      void PWMControl::setPulseFunc(Func dutyFunc, Func offFunc) {
         this->dutyFunc = dutyFunc; 
         this->offFunc = offFunc;    
       }  
 
-      void setPWWDuteTime(int analogResolutionRange, int currentResolution) {        
+      void PWMControl::setPWWDuteTime(int analogResolutionRange, int currentResolution) {        
         double duteTimeMilisec = (static_cast<double>(currentResolution) / static_cast<double>(analogResolutionRange)) * this->pwwPeriodInMilisec;
         this->duteLightTimeInMilisec =  duteTimeMilisec;    
       }      
 
-      void pulse() {
-      
+      void PWMControl::pulse() {      
         unsigned long currentTime = microsecFunc(); // точность до микросекунд
         unsigned long elapsed = currentTime - this->duteLastTimeMicros;
 
@@ -52,5 +36,4 @@ class PWMControl_ {
            this->duteLastTimeMicros = currentTime; // начинаем новый цикл
          }         
       }      
-};
 

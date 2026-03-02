@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "libs/pww.cpp"
+#include "pwm.h"
 
 int getMode();
 
@@ -38,9 +38,9 @@ void redOff();
         static constexpr int ANALOG_RESOLUTION = 4095; 
         
 
-        static constexpr int GREEN_LIGHT_TIME_MILISEC = 4000;
-        static constexpr int GREEN_BLINK_LIGHT_TIME_MILISEC = 1000;
-        static constexpr int YELLOW_LIGHT_TIME_MILISEC = 1000;
+        static constexpr int GREEN_LIGHT_TIME_MILISEC = 6000;
+        static constexpr int GREEN_BLINK_LIGHT_TIME_MILISEC = 2000;
+        static constexpr int YELLOW_LIGHT_TIME_MILISEC = 2000;
         static constexpr int RED_LIGHT_MILISEC = GREEN_LIGHT_TIME_MILISEC;
         static constexpr int RRED_YELOW_LIGHT_MILISEC = YELLOW_LIGHT_TIME_MILISEC;
         static constexpr int TRAFIC_ALL_LIGHT_WORK_PERIOD_MILISEC = GREEN_LIGHT_TIME_MILISEC + 
@@ -123,7 +123,8 @@ void redOff();
       timerAttachInterrupt(timer, onTimer, true);
       timerAlarmWrite(timer, 1000, true);          // кожну mil sec секунду 000
       timerAlarmEnable(timer);
-      Serial.begin(115200);        
+      Serial.begin(115200);   
+      Serial.println("HELLO World");
   }
 
   int getMode()
