@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../ESP32IDF"
+		},
+		{
+			"path": "../Core"
+		},
+		{
+			"path": "../ESP32/ESP32Setup"
+		}
+	],
+	"settings": {}
+}
