@@ -19,23 +19,22 @@ public:
     int GREEN_BLINK_LIGHT_TIME_MILISEC;
     int YELLOW_LIGHT_TIME_MILISEC;
     int RED_LIGHT_MILISEC;
-    int RED_YELLOW_LIGHT_MILISEC;
-    int TRAFIC_ALL_LIGHT_WORK_PERIOD_MILISEC;
+    int RED_YELLOW_LIGHT_MILISEC;    
 };
 
 class TraficLightController
 {
 
 private:
-    int TRAFIC_PHASE_DURATIONS[5];
-    TraficWorkConfig traficConfig;
     Led *ledGreen;
     Led *ledYellow;
     Led *ledRed;
+    TraficWorkConfig traficConfig;
+    int TRAFIC_PHASE_DURATIONS[5];
     TrafficLightMode getCurrentMode(long work_period_count_milisec);
 
 public:
-    TraficLightController(Led *ledGreen, Led *ledYellow, Led *ledRed, TraficWorkConfig traficConfig);
+    TraficLightController(Led *ledGreen, Led *ledYellow, Led *ledRed, const TraficWorkConfig traficConfig);
     void LightTrafic(long work_period_count_milisec);
     int getTraficAllWorkPeriod();
 };

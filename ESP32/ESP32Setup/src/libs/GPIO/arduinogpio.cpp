@@ -22,3 +22,9 @@ int ArduinoGPIO::readGPIO()
 {
     return digitalRead(gpionum);
 }
+
+
+int ArduinoGPIO::analogReqad()
+{
+    return analogRead(gpionum);
+}

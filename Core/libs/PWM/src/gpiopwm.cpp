@@ -2,7 +2,7 @@
 
     
       GPIOPWMControl::GPIOPWMControl(IGPIO* gpio, int pwwFrequencyGZ, GetMicrosecFunc microseconds) :             
-            gpio(gpio), microsecFunc(microseconds), workFrequencyGZ(pwwFrequencyGZ) {      
+            gpio(gpio), workFrequencyGZ(pwwFrequencyGZ), microsecFunc(microseconds) {      
         this->pwwPeriodInMilisec =  (1 / static_cast<double>(pwwFrequencyGZ)) * 1000.0;
         this->duteLightTimeInMilisec = this->pwwPeriodInMilisec;
         this->duteLastTimeMicros = 0;               

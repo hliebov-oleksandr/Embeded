@@ -4,8 +4,8 @@
 
 TraficLightController::TraficLightController(Led* ledGreen,Led* ledYellow, Led* ledRed, TraficWorkConfig traficConfig) :
     ledGreen(ledGreen), ledYellow(ledYellow), ledRed(ledRed), traficConfig(traficConfig)
-{        
-    TRAFIC_PHASE_DURATIONS[GREEN_LIGHT] = traficConfig.GREEN_LIGHT_TIME_MILISEC;
+{            
+    TRAFIC_PHASE_DURATIONS[TrafficLightMode::GREEN_LIGHT] = traficConfig.GREEN_LIGHT_TIME_MILISEC;
     TRAFIC_PHASE_DURATIONS[GREEN_BLINK_LIGHT] = traficConfig.GREEN_BLINK_LIGHT_TIME_MILISEC;
     TRAFIC_PHASE_DURATIONS[YELLOW_LIGHT] = traficConfig.YELLOW_LIGHT_TIME_MILISEC;
     TRAFIC_PHASE_DURATIONS[RED_LIGHT] = traficConfig.RED_LIGHT_MILISEC;

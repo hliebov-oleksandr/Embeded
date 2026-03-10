@@ -7,12 +7,14 @@ typedef void (*Func)(void);
 
 class GPIOPWMControl {
 private:
+    IGPIO* gpio;
     int workFrequencyGZ;
+    GetMicrosecFunc microsecFunc;
     double pwwPeriodInMilisec;
     double duteLightTimeInMilisec;
     long duteLastTimeMicros;
-    GetMicrosecFunc microsecFunc;
-    IGPIO* gpio;
+    
+    
     //Func dutyFunc;
     //Func offFunc;
 

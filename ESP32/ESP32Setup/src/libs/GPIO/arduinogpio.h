@@ -12,6 +12,7 @@ public:
   ArduinoGPIO(int gpionum, int mode);
   void writeGPIO(bool levelHigh) override;
   virtual int readGPIO() override;
+  virtual int analogReqad() override;
 };
 
 #endif
