@@ -21,7 +21,7 @@ public:
   static constexpr gpio_num_t LED_PIN_GREEN = GPIO_NUM_10; //10;
   static constexpr gpio_num_t LED_PIN_YELLOW = GPIO_NUM_13; //13;
   static constexpr gpio_num_t LED_PIN_RED = GPIO_NUM_11; //11;
-  static constexpr gpio_num_t PWWPOTENCIOMETR_PIN = GPIO_NUM_35; //12;
+  static constexpr gpio_num_t PWWPOTENCIOMETR_PIN = GPIO_NUM_12; //12;
 
   static constexpr int PWW_LED_FREQUENCY_GZ = 1000;
   static constexpr int ANALOG_RESOLUTION = 4095;
@@ -77,7 +77,7 @@ void startTraficLight(void *params) {
     while (true)
     {        
         int pwwValue = lightPotenciometr.analogReqad();// 2544; //analogRead(LedWorkConfig::PWWPOTENCIOMETR_PIN);   
-        printf("pww: %d", pwwValue); vTaskDelay(1000); 
+        //printf("pww: %d", pwwValue); vTaskDelay(1000); 
         pwwControlGreen.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
         pwwControlYellow.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
         pwwControlRed.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
@@ -94,7 +94,9 @@ extern "C" void app_main() {
     int i = 0;
     while (true)
     {
+        int pwwValue = lightPotenciometr.analogReqad();// 2544; //analogRead(LedWorkConfig::PWWPOTENCIOMETR_PIN);   
+        printf("pww: %d", pwwValue); //vTaskDelay(1000); 
         vTaskDelay(1000);
-        printf("main thread %d \n", (++i));
+        //printf("main thread %d \n", (++i));
     }    
 }

@@ -44,28 +44,36 @@ int EspIDFGPIO::analogReqad()
 
 adc1_channel_t EspIDFGPIO::getAnalogChannelADC1() {
     switch (gpionum) {
-        case GPIO_NUM_32: return ADC1_CHANNEL_4;
-        case GPIO_NUM_33: return ADC1_CHANNEL_5;
-        case GPIO_NUM_34: return ADC1_CHANNEL_6;
-        case GPIO_NUM_35: return ADC1_CHANNEL_7;
-        case GPIO_NUM_36: return ADC1_CHANNEL_0;
-        case GPIO_NUM_39: return ADC1_CHANNEL_3;
+        case GPIO_NUM_1:  return ADC1_CHANNEL_0;
+        case GPIO_NUM_2:  return ADC1_CHANNEL_1;
+        case GPIO_NUM_3:  return ADC1_CHANNEL_2;
+        case GPIO_NUM_4:  return ADC1_CHANNEL_3;
+        case GPIO_NUM_5:  return ADC1_CHANNEL_4;
+        case GPIO_NUM_6:  return ADC1_CHANNEL_5;
+        case GPIO_NUM_7:  return ADC1_CHANNEL_6;
+        case GPIO_NUM_8:  return ADC1_CHANNEL_7;
+        case GPIO_NUM_9:  return ADC1_CHANNEL_8;
+        case GPIO_NUM_10: return ADC1_CHANNEL_9;
         default:
-            printf("Error: GPIO%d не поддерживает ADC1\n", gpionum);
+            printf("Error: GPIO%d не поддерживает ADC1 (ESP32-S3)\n", gpionum);
             return ADC1_CHANNEL_MAX;
     }
 }
 
 adc2_channel_t EspIDFGPIO::getAnalogChannelADC2() {
-    switch ((gpionum)) {
-        case GPIO_NUM_12: return ADC2_CHANNEL_5;
-        case GPIO_NUM_13: return ADC2_CHANNEL_4;
-        case GPIO_NUM_14: return ADC2_CHANNEL_6;
-        case GPIO_NUM_15: return ADC2_CHANNEL_3;        
-        case GPIO_NUM_26: return ADC2_CHANNEL_9;
-        case GPIO_NUM_27: return ADC2_CHANNEL_7;
+    switch (gpionum) {
+        case GPIO_NUM_11: return ADC2_CHANNEL_0;
+        case GPIO_NUM_12: return ADC2_CHANNEL_1;
+        case GPIO_NUM_13: return ADC2_CHANNEL_2;
+        case GPIO_NUM_14: return ADC2_CHANNEL_3;
+        case GPIO_NUM_15: return ADC2_CHANNEL_4;
+        case GPIO_NUM_16: return ADC2_CHANNEL_5;
+        case GPIO_NUM_17: return ADC2_CHANNEL_6;
+        case GPIO_NUM_18: return ADC2_CHANNEL_7;
+        case GPIO_NUM_19: return ADC2_CHANNEL_8;
+        case GPIO_NUM_20: return ADC2_CHANNEL_9;
         default:
-            printf("Error: GPIO%d не поддерживает ADC2\n", gpionum);
+            printf("Error: GPIO%d не поддерживает ADC2 (ESP32-S3)\n", gpionum);
             return ADC2_CHANNEL_MAX;
     }
 }
