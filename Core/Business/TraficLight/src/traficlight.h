@@ -31,12 +31,12 @@ private:
     Led *ledRed;
     TraficWorkConfig traficConfig;
     int TRAFIC_PHASE_DURATIONS[5];
-    TrafficLightMode getCurrentMode(long work_period_count_milisec);
-
+    
 public:
     TraficLightController(Led *ledGreen, Led *ledYellow, Led *ledRed, const TraficWorkConfig traficConfig);
     void LightTrafic(long work_period_count_milisec);
     int getTraficAllWorkPeriod();
+    TrafficLightMode getCurrentMode(long work_period_count_milisec);
 };
 
 #endif

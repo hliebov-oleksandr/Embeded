@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../ESP32/ESP32Setup"
+		},
+		{
+			"path": "../STM/STM32F411/STM32"
 		}
 	],
 	"settings": {}

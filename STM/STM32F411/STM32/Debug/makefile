@@ -60,8 +60,8 @@ all: main-build
 main-build: STM32.elf secondary-outputs
 
 # Tool invocations
-STM32.elf STM32.map: $(OBJS) $(USER_OBJS) /Users/alexxx/Embeded/STM/STM32F411/STM32/STM32F411CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "STM32.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/alexxx/Embeded/STM/STM32F411/STM32/STM32F411CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STM32.elf STM32.map: $(OBJS) $(USER_OBJS) /Users/alexxx/Embeded_/Embeded/STM/STM32F411/STM32/STM32F411CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "STM32.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/alexxx/Embeded_/Embeded/STM/STM32F411/STM32/STM32F411CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

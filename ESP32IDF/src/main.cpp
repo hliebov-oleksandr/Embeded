@@ -76,12 +76,16 @@ void readLightingTraficSensorTask(void* params) {
 void startTraficLight(void *params) {
     while (true)
     {        
+        if (traficController.getCurrentMode(period_count_milisec) == GREEN_BLINK_LIGHT) {
+            vTaskDelay(10);
+        }
+
         int pwwValue = lightPotenciometr.analogReqad();// 2544; //analogRead(LedWorkConfig::PWWPOTENCIOMETR_PIN);   
         //printf("pww: %d", pwwValue); vTaskDelay(1000); 
         pwwControlGreen.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
         pwwControlYellow.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
         pwwControlRed.setPWWDuteTime(LedWorkConfig::ANALOG_RESOLUTION, pwwValue);
-        traficController.LightTrafic(period_count_milisec);        
+        traficController.LightTrafic(period_count_milisec);                    
     }   
 }
 
