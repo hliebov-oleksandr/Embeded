@@ -138,7 +138,7 @@ extern "C" void app_main()
     int i = 0;
     while (true)
     {
-        int pwwValue = lightPotenciometr.analogReqad(); // 2544; //analogRead(LedWorkConfig::PWWPOTENCIOMETR_PIN);
+        int pwwValue = lightPotenciometr.analogRead(); // 2544; //analogRead(LedWorkConfig::PWWPOTENCIOMETR_PIN);
 
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 90);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);

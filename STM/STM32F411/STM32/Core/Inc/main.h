@@ -15,7 +15,7 @@
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
-  */
+  */ 
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-/* Includes stm32f4xx_hal ------------------------------------------------------------------*/ 
+/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/

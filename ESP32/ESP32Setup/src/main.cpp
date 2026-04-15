@@ -4,6 +4,10 @@
 #include "led.h"
 #include "libs/GPIO/arduinogpio.h"
 #include "traficlight.h"
+#include <ESP32Servo.h>
+
+Servo myServo;
+int servoPin = 18; // выбери свободный GPIO, например 18
 
 
 class LedWorkConfig

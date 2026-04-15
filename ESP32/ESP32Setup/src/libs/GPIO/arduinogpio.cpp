@@ -3,7 +3,7 @@
 
 ArduinoGPIO::ArduinoGPIO(int gpionum, int mode) : gpionum(gpionum)
 {
-    pinMode(gpionum, mode);
+    pinMode(gpionum, mode);    
 }
 
 void ArduinoGPIO::writeGPIO(bool levelHigh)
@@ -24,7 +24,12 @@ int ArduinoGPIO::readGPIO()
 }
 
 
-int ArduinoGPIO::analogReqad()
+int ArduinoGPIO::analogRead()
+{     
+    return 4096;// analogRead(gpionum);
+}
+
+void ArduinoGPIO::pullUpDown(PulUPDonw type)
 {
-    return analogRead(gpionum);
+   pinMode(gpionum, type == PulUPDonw::PULL_UP ?  PULLUP : PULLDOWN);    
 }

@@ -25,7 +25,8 @@ public:
   EspIDFGPIO(gpio_num_t gpionum, gpio_mode_t mode);
   void writeGPIO(bool levelHigh) override;
   int readGPIO() override;
-  int analogReqad() override;  
+  int analogRead() override;  
+  void pullUpDown(PulUPDonw type) override;
 };
 
 #endif
