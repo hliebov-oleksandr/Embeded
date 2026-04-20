@@ -5,8 +5,10 @@
 #include "ssd1306.h"
 #include "bme280.h"
 #include "stdio.h"
+#include "utils.h"
 
 // extern "C" s32 bme280_init();
+extern "C" TIM_HandleTypeDef htim1;
 extern "C" s32 bme280_data_readout_template(void);
 extern "C" s32 bme280_data_readout_template(void);
 extern "C" BME280_RETURN_FUNCTION_TYPE bme280_read_pressure_temperature_humidity(
@@ -19,27 +21,32 @@ typedef struct
     u32 hum;
 } bme280_values_t;
 
-/*
-#include "usbd_cdc_if.h"
+volatile uint32_t ms_counter = 0; // глобальный счётчик миллисекунд
 
-uint8_t digital120_serial_send(const uint8_t * data, const uint16_t len){
-   if (data == NULL) {
-       return 0;
-   }
+extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM1) // проверяем, что это наш таймер
+    {
+        ms_counter++; // увеличиваем счётчик каждую 1 мс
+        if (ms_counter % 1000 == 0)
+        {
+            char buf[32];
+            int len = sprintf(buf, "counter: %d \r\n", ms_counter);
+            HAL_UART_Transmit(&huart2, (uint8_t *)buf, len, HAL_MAX_DELAY);
 
-   CDC_Transmit_FS(data, len);
-
-   return 1;
+            SSD1306_GotoXY(0, 30);
+            SSD1306_Puts(buf, &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
+            SSD1306_UpdateScreen();
+        }
+    }
 }
-uint8_t logData[200];
-uint16_t logDataLen;
-*/
 
 STMGPIO gpioBlueLed(GPIOA, GPIO_PIN_5);
 char data[] = "HELLO World AAAA AA\n";
 
 void setup()
 {
+    HAL_TIM_Base_Start_IT(&htim1);
     SSD1306_Init();
     SSD1306_GotoXY(0, 0);
 
@@ -50,26 +57,17 @@ void setup()
 
 void writeData(char *data)
 {
-    
     int len = strlen(data);
     HAL_UART_Transmit(&huart2, (uint8_t *)data, len, HAL_MAX_DELAY);
     char *delimetr = "\n";
-    const char *start = data;
-    const char *found_str;
-    int position, lasrposition;
-    char splitedData[3][64];
-    int countRows = 0;
+    
+    const int maxRowCount = 4;
+    char splitedData[maxRowCount][64];
+    char *ptr[maxRowCount];    
+    for (int i = 0; i < maxRowCount; i++) ptr[i] = splitedData[i];
 
-    while ((found_str = strstr(start, delimetr)) != NULL)
-    {
-        position = found_str - start;        
-        memcpy(splitedData[countRows], start, sizeof(char) * position);
-        splitedData[countRows][position] = '\0';
-        HAL_UART_Transmit(&huart2, (uint8_t *)splitedData[countRows], position, HAL_MAX_DELAY);
-        start = found_str + strlen(delimetr);
-        countRows++;
-    }
-
+    int countRows = Utils::split(data, delimetr, ptr, maxRowCount);
+   
     SSD1306_Clear();
     int j = 10;
     for (int i = 0; i < countRows; i++)
@@ -78,10 +76,10 @@ void writeData(char *data)
         SSD1306_GotoXY(0, j);
         SSD1306_Puts(splitedData[i], &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
         SSD1306_UpdateScreen();
-        j += 16;        
+        j += 16;
         //
     }
-    
+
     HAL_UART_Transmit(&huart2, (uint8_t *)data, len, HAL_MAX_DELAY);
 }
 
