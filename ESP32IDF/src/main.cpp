@@ -123,12 +123,9 @@ void wifi_init_sta(void)
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    // ПРОБЛЕМА БЫЛА ЗДЕСЬ:
-    // раньше структура инициализировалась частично, что давало десятки warning
-    // правильнее сначала обнулить, потом заполнить нужные поля
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "Alexxx",
+            .ssid = "*julia-porosenok",
             .password = "aaaBBB123"},
     };
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
