@@ -1,7 +1,7 @@
 #include "gpiopwm.h"
 
     
-      GPIOPWMControl::GPIOPWMControl(IGPIO* gpio, int pwwFrequencyGZ, GetMicrosecFunc microseconds) :             
+      GPIOPWMControl::GPIOPWMControl(IGPIO* gpio, int pwwFrequencyGZ, MicrosecProvider microseconds) :             
             gpio(gpio), workFrequencyGZ(pwwFrequencyGZ), microsecFunc(microseconds) {      
         this->pwwPeriodInMilisec =  (1 / static_cast<double>(pwwFrequencyGZ)) * 1000.0;
         this->duteLightTimeInMilisec = this->pwwPeriodInMilisec;

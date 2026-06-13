@@ -2,6 +2,13 @@
 #define ENCODER
 #include "gpio.h"
 
+enum class ENCODER_SWITCH_TYPE
+{
+    NONE,
+    CLICKED,
+    LONGCLICKED
+};
+
 enum class ENCODER_TYPE
 {
     NONE,
@@ -9,7 +16,7 @@ enum class ENCODER_TYPE
     B_SWICH
 };
 
-enum class EncoderDirection {
+enum class ENCODER_DIRECTION_TYPE {
     NONE,
     LEFT_DICREASE,
     RIGHT_INCREASE
@@ -20,7 +27,8 @@ struct EncoderResult
    public:
    int counter;
    bool encoderChanged;
-   EncoderDirection direction;
+   ENCODER_DIRECTION_TYPE direction;
+   ENCODER_SWITCH_TYPE switchType;
 };
 
 class Encoder

@@ -1,15 +1,13 @@
 #ifndef PWW_H
 #define PWW_H
 #include "gpio.h"
-
-typedef unsigned long (*GetMicrosecFunc)(void);
-typedef void (*Func)(void);
+#include "utils.h"
 
 class GPIOPWMControl {
 private:
     IGPIO* gpio;
     int workFrequencyGZ;
-    GetMicrosecFunc microsecFunc;
+    MicrosecProvider microsecFunc;
     double pwwPeriodInMilisec;
     double duteLightTimeInMilisec;
     long duteLastTimeMicros;
@@ -20,7 +18,7 @@ private:
 
 public:
     GPIOPWMControl();
-    GPIOPWMControl(IGPIO* gpio, int pwwFrequencyGZ, GetMicrosecFunc microseconds);
+    GPIOPWMControl(IGPIO* gpio, int pwwFrequencyGZ, MicrosecProvider microseconds);
     //void setPulseFunc(Func dutyFunc, Func offFunc);
     void setPWWDuteTime(int analogResolutionRange, int currentResolution);
     void pulse();

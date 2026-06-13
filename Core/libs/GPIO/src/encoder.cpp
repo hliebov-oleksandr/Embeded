@@ -2,10 +2,11 @@
 
 Encoder::Encoder(IGPIO* gpioA, IGPIO* gpioB) : gpioA(gpioA), gpioB(gpioB)
 {
-    result = {
+    Encoder::result = {
         .counter = 0,
         .encoderChanged = false,
-        .direction = EncoderDirection::NONE
+        .direction = ENCODER_DIRECTION_TYPE::NONE,
+        .switchType = ENCODER_SWITCH_TYPE::NONE
     };
 }
 

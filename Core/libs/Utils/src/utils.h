@@ -1,5 +1,7 @@
 #pragma once
 
+typedef unsigned long (*MicrosecProvider)(void);
+typedef void (*Func)(void);
 typedef void (*funcHandler)(char* param);
 
 class Utils {
