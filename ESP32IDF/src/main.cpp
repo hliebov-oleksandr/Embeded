@@ -6,7 +6,8 @@
 #include "esp_log.h"
 #include "libs/GPIO/espidfgpio.h"
 #include "encoder.h"
-#include "driver/i2c.h"
+#include "libs/ESPI2CPROVIDER/esp_i2c_provider_impl.h"
+#include "ssd1306.h"
 
 #define ENCODER_A_GPIO 4
 #define ENCODER_B_GPIO 5
@@ -37,19 +38,7 @@ void vReadEncoderTask(void *params)
 
 void vDisplayTask(void *pvParameters)
 {
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = DISPLAY_CLCK_GPIO,
-        .scl_io_num = DISPLAY_DATA_GPIO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master{
-            .clk_speed = 100000}};
-
-    i2c_param_config(I2C_NUM_0, &conf);     
-    i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0);
-
-    char buffer[64];
+    vTaskDelay(pdMS_TO_TICKS(20));
 /*
     for (;;)
     {
@@ -65,11 +54,25 @@ void vDisplayTask(void *pvParameters)
 
 extern "C" void app_main(void)
 {
+    
+    INITIALIZE_I2C(20, 21);
+
+    I2CProvider i2cProvider = GET_I2C_PROVIDER();
+    SSD_INITIALIZE_I2C_PROVIDER(i2cProvider);
+    SSD1306_Init();
+    SSD1306_GotoXY(0, 0);
+
+    SSD1306_GotoXY(0, 30);
+    //SSD1306_Puts("TIME 12:23:00", &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
+    SSD1306_UpdateScreen();
+
+    //
     xTaskCreate(vReadEncoderTask, "ReadEncoder", 4056, NULL, 1, NULL);
-    xTaskCreate(vDisplayTask, "DisplayTask", 4056, NULL, 1, NULL);
+    //xTaskCreate(vDisplayTask, "DisplayTask", 4056, NULL, 1, NULL);
     
     while (true)
-    {
-        vTaskDelay(pdMS_TO_TICKS(2));
+    {     
+        checkDevice();   
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
