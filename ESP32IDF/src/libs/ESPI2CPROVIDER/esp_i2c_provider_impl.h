@@ -11,8 +11,8 @@ extern "C" {
 #include "freertos/FreeRTOS.h"
 #include "i2cprovider.h"
 
-void checkDevice();
-void INITIALIZE_I2C(int clockPin, int dataPin);
+void CHECK_I2C_Device();
+void INITIALIZE_I2C(int clockPin, int dataPin, uint16_t address);
 
 /* C++ detection */
 #ifdef __cplusplus

@@ -12,8 +12,11 @@
 #define ENCODER_A_GPIO 4
 #define ENCODER_B_GPIO 5
 
-#define DISPLAY_CLCK_GPIO 20
-#define DISPLAY_DATA_GPIO 21
+#define DISPLAY_CLCK_GPIO 21
+#define DISPLAY_DATA_GPIO 47
+#define DISPLA_I2C_ADDRESS  0x3C
+
+QueueHandle_t encoderQueue;
 
 void vReadEncoderTask(void *params)
 {
@@ -31,6 +34,7 @@ void vReadEncoderTask(void *params)
         if (result.encoderChanged)
         {
             printf("Encoder C: %d \n", result.counter);
+            xQueueSend(encoderQueue, &result, portMAX_DELAY);
         }
         vTaskDelay(pdMS_TO_TICKS(5));
     }
@@ -38,24 +42,27 @@ void vReadEncoderTask(void *params)
 
 void vDisplayTask(void *pvParameters)
 {
-    vTaskDelay(pdMS_TO_TICKS(20));
-/*
-    for (;;)
-    {
-        if (xQueueReceive(xDisplayQueue, &buffer, portMAX_DELAY) == pdPASS)
+    EncoderResult recvResult;
+    while (true)
+    {        
+        if (xQueueReceive(encoderQueue, &recvResult, portMAX_DELAY) == pdTRUE)
         {
-            ssd1306_clear(&dev);
-            ssd1306_draw_string(&dev, 0, 0, buffer, 12, true);
-            ssd1306_refresh(&dev);
+            char str_result[9];
+            int len = sprintf(str_result, "* * * %d", recvResult.counter);
+            printf("%s\n", str_result);
+            SSD1306_Clear();
+            SSD1306_GotoXY(0, 30);
+            SSD1306_Puts(str_result, &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
+            SSD1306_UpdateScreen();
         }
     }
-        */
+
 }
 
 extern "C" void app_main(void)
 {
-    
-    INITIALIZE_I2C(20, 21);
+    encoderQueue = xQueueCreate(10, sizeof(EncoderResult));
+    INITIALIZE_I2C(DISPLAY_CLCK_GPIO, DISPLAY_DATA_GPIO, DISPLA_I2C_ADDRESS);
 
     I2CProvider i2cProvider = GET_I2C_PROVIDER();
     SSD_INITIALIZE_I2C_PROVIDER(i2cProvider);
@@ -63,16 +70,12 @@ extern "C" void app_main(void)
     SSD1306_GotoXY(0, 0);
 
     SSD1306_GotoXY(0, 30);
-    //SSD1306_Puts("TIME 12:23:00", &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
+    SSD1306_Puts("TIME *", &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
     SSD1306_UpdateScreen();
 
     //
-    xTaskCreate(vReadEncoderTask, "ReadEncoder", 4056, NULL, 1, NULL);
-    //xTaskCreate(vDisplayTask, "DisplayTask", 4056, NULL, 1, NULL);
+    xTaskCreate(vReadEncoderTask, "ReadEncoder", 4096, NULL, 1, NULL);
+    xTaskCreate(vDisplayTask, "DisplayTask", 4096, NULL, 1, NULL);
     
-    while (true)
-    {     
-        checkDevice();   
-        vTaskDelay(pdMS_TO_TICKS(2000));
-    }
+    //while (true) {     CHECK_I2C_Device();   vTaskDelay(pdMS_TO_TICKS(2000));}
 }
