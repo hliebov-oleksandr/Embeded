@@ -18,6 +18,57 @@
 
 QueueHandle_t encoderQueue;
 
+struct menu_item_t{
+    int8_t id;
+    char* name;    
+    void (*action_h)();
+    struct menu_item_t* sub_menu;
+    int8_t sub_menu_length;
+};
+
+typedef struct menu_item_t;
+
+void enable_wifi() {
+
+}
+
+void settings(){
+
+}
+
+void log() {
+
+}
+
+const int MENU_COUNT = 5;
+
+menu_item_t main_menu[MENU_COUNT] = {
+  { 1, "enable wi-fi", enable_wifi, NULL, 0},
+  { 2, "settings", settings, NULL, 0},  
+  { 3, "log", log, NULL, 0 },
+  { 4, "time", log, NULL, 0},
+  { 5, "exit", log, NULL, 0}
+};
+
+int current_menu_id = 0;
+
+void draw_menu(EncoderResult result) {
+    SSD1306_Clear();
+    if (current_menu_id > MENU_COUNT) current_menu_id = 0;
+    if (current_menu_id < 0) current_menu_id = MENU_COUNT;
+
+    current_menu_id = current_menu_id + (result.direction == ENCODER_DIRECTION_TYPE::RIGHT_INCREASE ? 1 : -1);
+    for (int i = 0; i < MENU_COUNT; i++) {                  
+        if (current_menu_id == i + 1) {
+            SSD1306_GotoXY(0, (Font_7x10.FontHeight * i) + 2);
+            SSD1306_Puts("> ", &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);                        
+        }
+        SSD1306_GotoXY(Font_7x10.FontWidth + 1, (Font_7x10.FontHeight * i) + 2);
+        SSD1306_Puts(main_menu[i].name, &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);                    
+    }
+    SSD1306_UpdateScreen();    
+}
+
 void vReadEncoderTask(void *params)
 {
 
@@ -47,6 +98,7 @@ void vDisplayTask(void *pvParameters)
     {        
         if (xQueueReceive(encoderQueue, &recvResult, portMAX_DELAY) == pdTRUE)
         {
+            /*
             char str_result[9];
             int len = sprintf(str_result, "* * * %d", recvResult.counter);
             printf("%s\n", str_result);
@@ -54,6 +106,8 @@ void vDisplayTask(void *pvParameters)
             SSD1306_GotoXY(0, 30);
             SSD1306_Puts(str_result, &Font_11x18, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
             SSD1306_UpdateScreen();
+            */
+           draw_menu(recvResult);
         }
     }
 
@@ -77,5 +131,5 @@ extern "C" void app_main(void)
     xTaskCreate(vReadEncoderTask, "ReadEncoder", 4096, NULL, 1, NULL);
     xTaskCreate(vDisplayTask, "DisplayTask", 4096, NULL, 1, NULL);
     
-    //while (true) {     CHECK_I2C_Device();   vTaskDelay(pdMS_TO_TICKS(2000));}
+    while (true) {     CHECK_I2C_Device();   vTaskDelay(pdMS_TO_TICKS(2000));}
 }

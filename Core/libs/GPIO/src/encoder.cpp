@@ -36,18 +36,22 @@ EncoderResult Encoder::readEncoder()
             if (isAside && !isBside)
             {
                 result.counter++;
+                result.direction = ENCODER_DIRECTION_TYPE::RIGHT_INCREASE;
             }
             else if (isBside && !isAside)
             {
                 result.counter--;
+                result.direction = ENCODER_DIRECTION_TYPE::LEFT_DICREASE;
             }
             else if (isAside && isBside && lastSwichSelection == ENCODER_TYPE::B_SWICH)
             {
                 result.counter++;
+                result.direction = ENCODER_DIRECTION_TYPE::RIGHT_INCREASE;
             }
             else if (isAside && isBside && lastSwichSelection == ENCODER_TYPE::A_SWICH)
             {
                 result.counter--;
+                result.direction = ENCODER_DIRECTION_TYPE::LEFT_DICREASE;
             }
             isAside = isBside = false;
             lastSwichSelection = ENCODER_TYPE::NONE;
