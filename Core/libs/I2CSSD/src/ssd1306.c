@@ -30,10 +30,13 @@
  */
 #include "ssd1306.h"
 
-I2CProvider i2cProvider;
+I2CHandlers_t i2cProvider;
+int SSD1306_I2C_ADDR;
 
-void SSD_INITIALIZE_I2C_PROVIDER(I2CProvider provider) {
+void SSD1306_Init_I2C_Provider(I2CHandlers_t provider) {
 	i2cProvider = provider;
+	SSD1306_I2C_ADDR = provider.Address;
+	SSD1306_Init();     
 }
 
 //extern I2C_HandleTypeDef hi2c1;

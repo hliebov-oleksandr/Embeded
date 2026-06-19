@@ -1,6 +1,7 @@
 #pragma once
+#include <stdint.h> 
 
-typedef unsigned long (*MicrosecProvider)(void);
+typedef int64_t (*MicrosecProvider)(void);
 typedef void (*Func)(void);
 typedef void (*funcHandler)(char* param);
 

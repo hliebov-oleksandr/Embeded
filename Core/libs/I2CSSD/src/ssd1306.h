@@ -61,13 +61,13 @@ SDA        |PB7          |Serial data line
 #include "stdlib.h"
 #include "string.h"
 #include <stdbool.h>
-#include "i2cprovider.h"
+#include "i2cproviderdata.h"
 
-void SSD_INITIALIZE_I2C_PROVIDER(I2CProvider provider);
+void SSD1306_Init_I2C_Provider(I2CHandlers_t provider);
 
 /* I2C address */
 #ifndef SSD1306_I2C_ADDR
-#define SSD1306_I2C_ADDR         0x78
+#define SSD1306_I2C_ADDR_OLD         0x78
 //#define SSD1306_I2C_ADDR       0x7A
 #endif
 

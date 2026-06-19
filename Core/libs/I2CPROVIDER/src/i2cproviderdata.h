@@ -16,9 +16,8 @@ typedef struct
 {  
     I2C_Master_TransmitProvider I2C_Master_Transmit;
     I2C_IsDeviceReadyProvider I2C_IsDeviceReady;
-} I2CProvider;
-
-I2CProvider GET_I2C_PROVIDER();
+    int Address;    
+} I2CHandlers_t;
 
 #ifdef __cplusplus
 }
