@@ -4,10 +4,11 @@
 #include "gpio.h"
 #include "utils.h"
 
-enum class ENCODER_CLICK_TYPE {
+enum class ENCODER_RESULT_TYPE {
     NONE,
     CLICKED,
-    LONGCLICKED
+    LONGCLICKED,
+    CHANGE_DIRECTION
 };
 
 enum class ENCODER_DIRECTION_TYPE {
@@ -21,7 +22,7 @@ public:
     int counter;
     bool encoderChanged;
     ENCODER_DIRECTION_TYPE direction;
-    ENCODER_CLICK_TYPE clickType;
+    ENCODER_RESULT_TYPE resultType;
 };
 
 class Encoder {

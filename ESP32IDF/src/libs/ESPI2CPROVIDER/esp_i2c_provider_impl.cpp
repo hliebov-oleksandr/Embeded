@@ -2,9 +2,6 @@
 #include "esp_err.h"
 #include "driver/i2c_master.h"
 
-#define I2C_PORT I2C_NUM_0
-#define ADDRESS_OLED 0x3C
-
  
 void I2CESPProvider::CheckI2CDevices()
 {
@@ -17,12 +14,12 @@ void I2CESPProvider::CheckI2CDevices()
     }
 }
 
-I2CESPProvider::I2CESPProvider(gpio_num_t clockPin, gpio_num_t dataPin, uint16_t address):
-        clockPin(clockPin), dataPin(dataPin),address(address)
+I2CESPProvider::I2CESPProvider(gpio_num_t clockPin, gpio_num_t dataPin, uint16_t address, i2c_port_num_t port):
+        clockPin(clockPin), dataPin(dataPin),address(address), port(port)
 {
     
     i2c_master_bus_config_t bus_config = {
-        .i2c_port = I2C_PORT,
+        .i2c_port = port,
         .sda_io_num = dataPin,
         .scl_io_num = clockPin,
         .clk_source = I2C_CLK_SRC_DEFAULT,

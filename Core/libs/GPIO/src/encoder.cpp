@@ -6,7 +6,7 @@ Encoder::Encoder(IGPIO *gpioA, IGPIO *gpioB, IGPIO *gpioClick, MicrosecProvider 
       debounceDurationMicrosec(debounce), longClickMicrosec(longClick),
       lastABState(0), phase(0), lastClickTime(0), lastDebounceTime(0)
 {
-    result = {0, false, ENCODER_DIRECTION_TYPE::NONE, ENCODER_CLICK_TYPE::NONE};
+    result = {0, false, ENCODER_DIRECTION_TYPE::NONE, ENCODER_RESULT_TYPE::NONE};
 }
 
 EncoderResult Encoder::readEncoder()
@@ -26,24 +26,31 @@ EncoderResult Encoder::readEncoder()
     int delta = transitionTable[lastABState][newState];
     phase += delta;
 
+    if (delta != 0) {
+        result.encoderChanged = true;
+        result.resultType = ENCODER_RESULT_TYPE::CHANGE_DIRECTION;    
+    }
+
     if (phase == 2)
     { // полный цикл вправо
         result.counter++;
-        result.encoderChanged = true;
+        //result.encoderChanged = true;
         result.direction = ENCODER_DIRECTION_TYPE::RIGHT_INCREASE;
+        //result.resultType = ENCODER_RESULT_TYPE::CHANGE_DIRECTION;
         phase = 0;
     }
     else if (phase == -2)
     { // полный цикл влево
         result.counter--;
-        result.encoderChanged = true;
+        //result.encoderChanged = true;
+        //result.resultType = ENCODER_RESULT_TYPE::CHANGE_DIRECTION;
         result.direction = ENCODER_DIRECTION_TYPE::LEFT_DICREASE;
         phase = 0;
     }
     else
     {
         result.encoderChanged = false;
-        result.direction = ENCODER_DIRECTION_TYPE::NONE;
+        result.direction = ENCODER_DIRECTION_TYPE::NONE;        
     }
 
     lastABState = newState;
@@ -62,7 +69,7 @@ EncoderResult Encoder::readEncoder()
         // проверяем удержание
         if (!longClickHandled && (now - lastClickTime) > longClickMicrosec)
         {
-            result.clickType = ENCODER_CLICK_TYPE::LONGCLICKED;
+            result.resultType = ENCODER_RESULT_TYPE::LONGCLICKED;
             result.encoderChanged = true;
             longClickHandled = true; // больше не сработает до отпускания
         }
@@ -75,15 +82,11 @@ EncoderResult Encoder::readEncoder()
             lastDebounceTime = now;
             if ((now - lastClickTime) <= longClickMicrosec)
             {
-                result.clickType = ENCODER_CLICK_TYPE::CLICKED;
+                result.resultType = ENCODER_RESULT_TYPE::CLICKED;
                 result.encoderChanged = true;
             }
             lastClickTime = 0; // сброс
-        }
-        else
-        {
-            result.clickType = ENCODER_CLICK_TYPE::NONE;
-        }
+        }        
     }
     return result;
 }

@@ -15,60 +15,76 @@
 #define ENCODER_CLICK_GPIO 6
 
 #define DISPLAY_CLCK_GPIO gpio_num_t::GPIO_NUM_21 // 21
-#define DISPLAY_DATA_GPIO gpio_num_t::GPIO_NUM_47 //47
-#define DISPLA_I2C_ADDRESS  0x3C
+#define DISPLAY_DATA_GPIO gpio_num_t::GPIO_NUM_47 // 47
+#define DISPLA_I2C_ADDRESS 0x3C
+#define I2C_PORT I2C_NUM_0
 
 QueueHandle_t encoderQueue;
 
-struct menu_item_t{
+struct menu_item_t
+{
     int8_t id;
-    char* name;    
+    char *name;
     void (*action_h)();
-    struct menu_item_t* sub_menu;
+    struct menu_item_t *sub_menu;
     int8_t sub_menu_length;
 };
 
 typedef struct menu_item_t;
 
-void enable_wifi() {
+void enable_wifi()
+{
     printf("Enable wo - fi");
 }
 
-void settings(){
+void settings()
+{
     printf("settings");
 }
 
-void log() {
-
+void log()
+{
 }
 
 const int MENU_COUNT = 5;
 
 menu_item_t main_menu[MENU_COUNT] = {
-  { 1, "enable wi-fi", enable_wifi, NULL, 0},
-  { 2, "settings", settings, NULL, 0},  
-  { 3, "log", log, NULL, 0 },
-  { 4, "time", log, NULL, 0},
-  { 5, "exit", log, NULL, 0}
-};
+    {1, "enable wi-fi", enable_wifi, NULL, 0},
+    {2, "settings", settings, NULL, 0},
+    {3, "log", log, NULL, 0},
+    {4, "time", log, NULL, 0},
+    {5, "exit", log, NULL, 0}};
 
 int current_menu_id = 0;
 
-void draw_menu(EncoderResult result) {
+void draw_menu(EncoderResult result)
+{
     SSD1306_Clear();
-    if (current_menu_id > MENU_COUNT) current_menu_id = 0;
-    if (current_menu_id < 0) current_menu_id = MENU_COUNT;
+    if (current_menu_id > MENU_COUNT)
+        current_menu_id = 0;
+    if (current_menu_id < 0)
+        current_menu_id = MENU_COUNT;
 
-    current_menu_id = current_menu_id + (result.direction == ENCODER_DIRECTION_TYPE::RIGHT_INCREASE ? 1 : -1);
-    for (int i = 0; i < MENU_COUNT; i++) {                  
-        if (current_menu_id == i + 1) {            
+    if (result.resultType == ENCODER_RESULT_TYPE::CHANGE_DIRECTION)
+    {
+        current_menu_id = current_menu_id + (result.direction == ENCODER_DIRECTION_TYPE::RIGHT_INCREASE ? 1 : -1);
+    }
+    else if (current_menu_id > 0 && result.resultType == ENCODER_RESULT_TYPE::CLICKED)
+    {
+        main_menu[current_menu_id - 1].action_h();
+    }
+    printf("m_id: %d dir: %d", current_menu_id, (int)result.resultType);
+    for (int i = 0; i < MENU_COUNT; i++)
+    {
+        if (current_menu_id == i + 1)
+        {
             SSD1306_GotoXY(0, (Font_7x10.FontHeight * i) + 2);
-            SSD1306_Puts("> ", &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);                        
+            SSD1306_Puts("> ", &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
         }
         SSD1306_GotoXY(Font_7x10.FontWidth + 1, (Font_7x10.FontHeight * i) + 2);
-        SSD1306_Puts(main_menu[i].name, &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);                    
+        SSD1306_Puts(main_menu[i].name, &Font_7x10, SSD1306_COLOR_t::SSD1306_COLOR_WHITE);
     }
-    SSD1306_UpdateScreen();    
+    SSD1306_UpdateScreen();
 }
 
 void vReadEncoderTask(void *params)
@@ -79,8 +95,8 @@ void vReadEncoderTask(void *params)
 
     gpioA.pullUpDown(PulUPDonw::PULL_UP);
     gpioB.pullUpDown(PulUPDonw::PULL_UP);
-    
-    Encoder encoder(&gpioA, &gpioB, &gpioClick, esp_timer_get_time);   
+
+    Encoder encoder(&gpioA, &gpioB, &gpioClick, esp_timer_get_time);
 
     while (true)
     {
@@ -98,23 +114,24 @@ void vDisplayTask(void *pvParameters)
 {
     EncoderResult recvResult;
     while (true)
-    {        
+    {
         if (xQueueReceive(encoderQueue, &recvResult, portMAX_DELAY) == pdTRUE)
-        {           
-           draw_menu(recvResult);
+        {
+            draw_menu(recvResult);
         }
     }
-
 }
 
-I2CESPProvider i2CLed(DISPLAY_CLCK_GPIO, DISPLAY_DATA_GPIO, DISPLA_I2C_ADDRESS);
+I2CESPProvider i2CLed(DISPLAY_CLCK_GPIO, DISPLAY_DATA_GPIO, DISPLA_I2C_ADDRESS, I2C_PORT);
 
-bool IC2CLedTransmitWrapper(uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) { 
- return i2CLed.IC2CTransmit(DevAddress, pData, Size, Timeout);
+bool IC2CLedTransmitWrapper(uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+{
+    return i2CLed.IC2CTransmit(DevAddress, pData, Size, Timeout);
 }
 
-bool IC2CReadytWrapper(uint16_t DevAddress, uint32_t Trials, uint32_t Timeout) { 
- return i2CLed.I2CIsReady(DevAddress, Trials, Timeout);
+bool IC2CReadytWrapper(uint16_t DevAddress, uint32_t Trials, uint32_t Timeout)
+{
+    return i2CLed.I2CIsReady(DevAddress, Trials, Timeout);
 }
 
 extern "C" void app_main(void)
@@ -123,13 +140,16 @@ extern "C" void app_main(void)
     I2CHandlers_t i2CLedHandlers = {
         .I2C_Master_Transmit = IC2CLedTransmitWrapper,
         .I2C_IsDeviceReady = IC2CReadytWrapper,
-        .Address = DISPLA_I2C_ADDRESS
-    };
-    SSD1306_Init_I2C_Provider(i2CLedHandlers);        
-        
+        .Address = DISPLA_I2C_ADDRESS};
+    SSD1306_Init_I2C_Provider(i2CLedHandlers);
+
     //
     xTaskCreate(vReadEncoderTask, "ReadEncoder", 4096, NULL, 1, NULL);
     xTaskCreate(vDisplayTask, "DisplayTask", 4096, NULL, 1, NULL);
-    
-    while (true) {  i2CLed.CheckI2CDevices();   vTaskDelay(pdMS_TO_TICKS(2000));}
+
+    while (true)
+    {
+        i2CLed.CheckI2CDevices();
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
 }
